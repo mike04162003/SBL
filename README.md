@@ -1,7 +1,18 @@
-# Slim Bootloader support platform list
+
 
 Slim Bootloader support platform list
 =====================================
+
+
+FSP Project Name | Directory Name | FSP Specification Version
+:--------------- | :------------- | :------------------------
+12th, 13th, & 14th Generation Intel Core processors and chipsets (formerly Alder Lake, Raptor Lake, & Raptor Lake Refresh) | RaptorlakeFspBinPkg | v2.3
+
+Porject Name | Porject ID | Platform ID | Directory Name | Payload Type | Status
+:----------- |:----------- |:-------------- | :---------- | :----------  | :----------
+SOM-6884|688400S|0x1D|RaptorlakeBoardPkg|LLDR;UEFI|Bring up to OS
+SOM-C350|C35000S|0x1C|AlderlakeBoardPkg|LLDR;UEFI|Bring up to uefi shell
+
 
 
 FSP Project Name | Directory Name | FSP Specification Version
