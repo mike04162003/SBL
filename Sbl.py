@@ -1,0 +1,128 @@
+## @ Sbl.py
+#
+# Copyright (c) 2018 - 2026, Advantech Co Ltd. All rights reserved.<BR>
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+#
+# Copyright (c) 2018 - 2021, Intel Corporation. All rights reserved.<BR>
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+import os
+import sys
+import re
+import shutil
+import argparse
+import subprocess
+from   datetime import date
+
+##debug = "NO"
+debug = "ALL"
+
+def Fatal (msg):
+    if debug == "ALL" :
+        sys.stdout.flush()
+        raise Exception (msg)
+
+def Print (msg):
+    if debug == "ALL" :
+        print ('%s' % msg)
+
+def GitCloneRepo (clone_dir, clone_repo, clone_commit):
+
+    if clone_repo == '' :
+        Fatal ('Failed to find repo and commit information!')
+
+    Print (' clone_repo: %s\n clone_commit: %s' % (clone_repo, clone_commit))
+
+    base_dir = os.path.basename(clone_dir)
+    if base_dir == '$AUTO':
+        repo_dir = os.path.basename(clone_repo)
+        if repo_dir.lower().endswith('.git'):
+            repo_dir = repo_dir[:-4]
+        clone_dir = os.path.join (os.path.dirname(clone_dir), repo_dir)
+
+    if not os.path.exists(clone_dir + '/.git'):
+        Print ('Cloning the repo ... %s' % clone_repo)
+        cmd = 'git clone %s %s' % (clone_repo, clone_dir)
+        ret = subprocess.call(cmd.split(' '))
+        if ret:
+            Fatal ('Failed to clone repo to directory %s !' % clone_dir)
+        Print ('GitCloneRepo - clone Done\n')
+        Print ('Attempting to check out specified version ... %s' % clone_commit)
+        cmd = 'git checkout %s' % clone_commit
+        ret = subprocess.call(cmd.split(' '), cwd=clone_dir)
+        if ret == 0:
+            Print ('GitCloneRepo - checkout Done\n')
+            return clone_dir
+        else:
+            Print ('GitCloneRepo - checkout: Failed to checkout  commit: %s' % clone_commit)
+    else:
+        # If the repository already exists, then try to check out the correct
+        # revision without going to the network
+        Print ('Attempting to check out specified version ... %s' % clone_commit)
+        cmd = 'git checkout %s' % clone_commit
+        ret = subprocess.call(cmd.split(' '), cwd=clone_dir)
+        if ret == 0:
+            Print ('GitCloneRepo - checkout Done\n')
+            return clone_dir
+        else:
+            Print ('GitCloneRepo - checkout: Failed to checkout  commit: %s' % clone_commit)
+
+def get_platform_type (arg_platform):
+    platform_type ={
+        '688400S'    :   'SOM-6884',
+        '6884A2S'    :   'SOM-6884A2',
+        '758300S'    :   'SOM-7583',
+        '599300S'    :   'SOM-5993',
+        'D58000S'    :   'SOM-D580',
+        'C35000S'    :   'SOM-C350',
+        'DS20200'    :   'DS-202',
+        'A28700A'    :   'AIMB-287',
+        'A58600A'    :   'AIMB-586',
+        '756900S'    :   'ADV'
+    }
+
+
+    ModuleType = platform_type.get(arg_platform, "")
+
+    sku_dict = platform_type
+    sku = arg_platform
+    for sku in platform_type:
+        platform_type =  sku
+        Print ("No sku is given, set to default sku value %s" % sku)
+
+    return ModuleType
+
+def run_cmd(cmd_list):
+    sys.stdout.flush()
+    print (' '.join(cmd_list))
+    ret = subprocess.call(cmd_list)
+    if ret:
+        sys.exit(1)
+
+def Main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('-g',   dest='--getsbl', default = '', help='get slim bootloader and platform source')
+    ap.add_argument('-p',   dest='platform', default = '', choices=['688400S','6884A2S','758300S','599300S','D58000S','C35000S','DS20200','A28700A','A58600A','756900S'], help='specify Advantech project name')
+    args = ap.parse_args()
+
+    repo_dir = os.path.abspath (os.path.join(os.getcwd(), '$AUTO'))
+#    repo = 'https://github.com/Advgcipc/AdvantechSBL.git'
+#    repo = 'https://github.com/Advgcipc/slimbootloader.git'
+    commit = get_platform_type (args.platform)
+
+    Print ("repo_dir :  %s\n"  % repo_dir)
+#    Print ("    repo :  %s\n"  % repo)
+    Print ("  commit :  %s\n"  % commit)
+
+#    GitCloneRepo (repo_dir, repo, commit)
+    script_dir = os.path.abspath (os.path.join(os.getcwd(), 'AHCLSbl','Tools'))
+    Print ("script_dir :  %s\n"  % script_dir)
+    run_cmd([sys.executable, os.path.join(script_dir, 'AHCLSbl.py')])
+ 
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(Main())
