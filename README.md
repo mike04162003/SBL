@@ -3,9 +3,11 @@
 Slim Bootloader support platform list
 =====================================
 
+
 FSP Project Name | Directory Name | FSP Specification Version
 :--------------- | :------------- | :------------------------
 11th Generation Intel Core processors and chipsets (formerly Tiger Lake) | TigerLakeFspBinPkg | v2.2
+
 
 Porject Name | Porject ID | Platform ID | Directory Name  | Payload Type | Status
 :----------- |:----------- |:-------------- | :---------- | :----------
